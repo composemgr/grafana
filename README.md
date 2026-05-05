@@ -50,7 +50,7 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/grafana` - Data storage
+- `./volumes/data/grafana` - Data storage
 
 ## 🔐 Security
 
