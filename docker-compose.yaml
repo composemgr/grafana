@@ -30,7 +30,7 @@ services:
     ports:
       - '172.17.0.1:3000:3000'
     volumes:
-      - './rootfs/data/grafana:/var/lib/grafana'
+      - './volumes/data/grafana:/var/lib/grafana'
     user: '${SERVICE_USER:-1000}:${SERVICE_GROUP:-1000}'
     networks:
       - grafana
