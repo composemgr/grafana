@@ -1,4 +1,4 @@
-# nginx proxy address - http://172.17.0.1:3000
+# nginx proxy address - http://172.17.0.1:64190
 
 name: grafana
 x-logging: &default-logging
@@ -11,16 +11,18 @@ services:
   app:
     image: grafana/grafana:latest
     container_name: grafana-app
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
     hostname: ${BASE_HOST_NAME:-$HOSTNAME}
     restart: always
     pull_policy: always
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
-      GF_SERVER_ROOT_URL: http://${BASE_HOST_NAME:-$HOSTNAME}:3000
+      GF_SERVER_ROOT_URL: http://${BASE_HOST_NAME:-$HOSTNAME}:64190
+      GF_SERVER_HTTP_PORT: 3000
       GF_SECURITY_ADMIN_USER: ${APP_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${APP_ADMIN_PASS:-changeme_admin_password}
-      GF_SECURITY_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
+      GF_SECURITY_ADMIN_PASSWORD: ${APP_ADMIN_PASS:-replace-with-a-random-password}
+      GF_SECURITY_SECRET_KEY: ${APP_SECRET_KEY:-replace-with-a-random-password}
       GF_INSTALL_PLUGINS: ${GF_INSTALL_PLUGINS:-}
       GF_SMTP_ENABLED: "true"
       GF_SMTP_HOST: ${EMAIL_SERVER_HOST:-172.17.0.1}:${EMAIL_SERVER_PORT:-587}
@@ -30,36 +32,14 @@ services:
       CONTAINER_NAME: grafana-app
       HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
-      - '172.17.0.1:3000:3000'
+      - '172.17.0.1:64190:3000'
     volumes:
       - './volumes/data/grafana:/var/lib/grafana'
     user: '${SERVICE_USER:-1000}:${SERVICE_GROUP:-1000}'
     networks:
       - grafana
-      - proxy
-      - cloudflare
-    labels:
-      - 'traefik.enable=true'
-      - 'cloudflare.enable=true'
-      - 'traefik.docker.network=proxy'
-      - 'cloudflare.service=http://grafana-app:3000'
-      - 'cloudflare.hostname=grafana.${CLOUDFLARE_ZONE_NAME:-}'
-      - 'traefik.http.routers.grafana-app.entrypoints=http'
-      - 'traefik.http.routers.grafana-app-secure.tls=true'
-      - 'traefik.http.routers.grafana-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
-      - 'traefik.http.middlewares.grafana-app-https-redirect.redirectscheme.scheme=https'
-      - 'traefik.http.routers.grafana-app.middlewares=grafana-app-https-redirect'
-      - 'traefik.http.routers.grafana-app-secure.entrypoints=https'
-      - 'traefik.http.routers.grafana-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
-      - 'traefik.http.routers.grafana-app-secure.tls.certresolver=cloudflare'
-      - 'traefik.http.routers.grafana-app-secure.service=grafana-app'
-      - 'traefik.http.services.grafana-app.loadbalancer.server.port=3000'
 
 networks:
   grafana:
     name: grafana
     external: false
-  proxy:
-    external: true
-  cloudflare:
-    external: true
